@@ -1,0 +1,97 @@
+# Name: Munib Chougle
+# Language: SQL (.sql extension)
+# Provided in text file for easier access
+# PLAN:
+# To get different distinct country names in the database
+# To Create different tables using the given data in Distinct table
+# Try to Automate the process
+-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x
+
+------------------------------------------------------------------------
+# To create Table
+------------------------------------------------------------------------
+
+CREATE TABLE Table_Staging(
+	Customer_Name VARCHAR(255) PRIMARY KEY NOT NULL,
+	Custome_Id VARCHAR(18) NOT NULL,
+	Open_Date DATE NOT NULL,
+	Last_Consulted_Date DATE,
+	Vaccination_Id CHAR(5),
+	Dr_Name CHAR(255),
+	State CHAR(5),
+	Country CHAR(5),
+	DOB DATE,
+	Is_Active CHAR(1)	
+);
+
+#Post Code is mentioned in the table but not anywhere else
+#for that reason it is not taken into consideration here
+
+
+INSERT INTO Table_Staging VALUES('Alex', '123457', '20101012', '20121013','MVD','Paul', 'SA', 'USA', '6031987', 'A');
+INSERT INTO Table_Staging VALUES('John', '123456', '20101012', '20121013','MVD','Paul', 'TN', 'IND', '6031987', 'A');
+INSERT INTO Table_Staging VALUES('Mathew', '54354', '20101012', '20121013','MVD','Paul', 'WAS', 'PHIL', '6031987', 'A');
+INSERT INTO Table_Staging VALUES('Matt', '5453', '20101012', '20121013','MVD','Paul', 'BOS', 'NYC', '6031987', 'A');
+INSERT INTO Table_Staging VALUES('Jacob', '54563', '20101012', '20121013','MVD','Paul', 'VIC', 'AU', '6031987', 'A');
+
+#SELECT * FROM Table_Staging;
+
+------------------------------------------------------------------------
+# To provide all the Distint country value
+------------------------------------------------------------------------
+
+#Basic Distinct Query
+#SELECT DISTINCT Country
+#FROM Table_Staging;
+
+-------------------------
+
+#Final Code
+
+SELECT Country, count(*) INTO Table_Distinct
+FROM Table_Staging
+GROUP BY Country;
+
+ALTER TABLE Table_Distinct
+ADD D_id INT AUTO_INCREMENT; #this is done to have specific ID to all the countries
+
+
+------------------------------------------------------------------------
+# To Create a new table with all the specific countries
+------------------------------------------------------------------------
+#Easy way:
+
+SELECT * INTO Table_Ind
+FROM Table_Staging
+WHERE Country = 'IND'; 
+
+#Do this for all different countries
+
+----------------------------
+
+# Better Automated Solution:
+# This will create different tables for all different countries with specific table names. 
+
+DECLARE @counter INT
+SET @counter = 1
+DECLARE @totalcount INT
+SET @totalcount = ( SELECT COUNT(DISTINCT country) FROM Table_Staging; ) # Distinct Total number of countries.
+WHILE (@counter <= @totalcount)
+BEGIN
+	DECLARE @cname VARCHAR(10)	#cname is the country name
+	SET @cname = ( SELECT country FROM Table_Distinct 
+					WHERE D_id = @counter;)
+	DECLARE @tname VARCHAR(20)	#tname is the different table name
+	SET @tname = 'Table_'+@cname
+	
+	SELECT * INTO @tname
+	FROM table_Staging
+	WHERE Country = @cname
+	
+	SET @counter = @counter + 1
+END
+
+----------------------------
+
+
+
